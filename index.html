@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Robotix</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="logo">🤖 Robotix</div>
+  <div class="menu">
+    <div id="userOptions">
+      <button onclick="registerUser()">Registrarme</button>
+      <button onclick="loginUser()">Iniciar Sesión</button>
+    </div>
+    <div id="userInfo" style="display: none;">
+      <span id="usernameDisplay"></span>
+      <button onclick="logoutUser()">Cerrar Sesión</button>
+    </div>
+    <select id="providerSelect">
+      <option value="openai">OpenAI</option>
+      <option value="ollama">Ollama (local)</option>
+    </select>
+  </div>
+</header>
+
+<main>
+  <aside id="chatHistory"></aside>
+  <section class="avatar-section">
+    <div id="avatarContainer"></div>
+    <div id="botBubble" class="bot-bubble">¡Hola! Soy Robotix.</div>
+  </section>
+</main>
+
+<footer>
+  <input id="userInput" placeholder="Escribe o habla tu mensaje..." />
+  <button onclick="startSpeech()">🎙️</button>
+  <button onclick="sendMessage()">Enviar</button>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

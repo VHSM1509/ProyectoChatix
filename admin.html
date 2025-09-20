@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Panel de Administración - Robotix</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f4f4f9;
+    color: #333;
+  }
+  h1 { color: #0d6efd; }
+  .container { display: flex; flex-wrap: wrap; gap: 20px; }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 15px;
+    flex: 1;
+    min-width: 300px;
+  }
+  pre {
+    background: #eee;
+    padding: 10px;
+    border-radius: 8px;
+    overflow: auto;
+  }
+  button {
+    padding: 8px 12px;
+    margin: 5px 0;
+    border: none;
+    border-radius: 8px;
+    background: #0d6efd;
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover { background: #0b5ed7; }
+  ul { list-style: none; padding: 0; }
+  li {
+    cursor: pointer;
+    margin: 5px 0;
+    padding: 4px 8px;
+    border-radius: 5px;
+  }
+  li:hover { background: #e0f0ff; font-weight: bold; }
+  .delete-btn {
+    background: #dc3545;
+    margin-left: 10px;
+  }
+  .delete-btn:hover { background: #c82333; }
+</style>
+</head>
+<body>
+
+<h1>Panel de Administración - Robotix</h1>
+
+<div class="container">
+  <div class="card">
+    <h2>Usuarios</h2>
+    <button onclick="loadUsers()">Cargar Usuarios</button>
+    <ul id="userList"></ul>
+  </div>
+
+  <div class="card">
+    <h2>Datos del Usuario</h2>
+    <pre id="userData">Selecciona un usuario...</pre>
+  </div>
+
+  <div class="card">
+    <h2>Estadísticas Generales</h2>
+    <button onclick="loadStats()">Cargar Estadísticas</button>
+    <canvas id="topicsChart"></canvas>
+  </div>
+</div>
+
+<script>
+async function loadUsers() {
+  const res = await fetch("http://127.0.0.1:8000/admin/users");
+  const users = await res.json();
+  const list = document.getElementById("userList");
+  list.innerHTML = "";
+  users.forEach(user => {
+    const li = document.createElement("li");
+    li.textContent = user;
+    li.onclick = () => loadUserData(user);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Eliminar";
+    deleteBtn.classList.add("delete-btn");
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (confirm(`¿Estás seguro de eliminar a ${user}?`)) {
+        deleteUser(user);
+      }
+    };
+
+    li.appendChild(deleteBtn);
+    list.appendChild(li);
+  });
+}
+
+async function loadUserData(user) {
+  const res = await fetch(`http://127.0.0.1:8000/admin/user/${user}`);
+  const data = await res.json();
+  document.getElementById("userData").textContent = JSON.stringify(data, null, 2);
+}
+
+async function loadStats() {
+  const res = await fetch("http://127.0.0.1:8000/admin/stats");
+  const stats = await res.json();
+  createChart(stats.topics_summary);
+}
+
+async function deleteUser(user) {
+  const res = await fetch(`http://127.0.0.1:8000/admin/delete/${user}`, {
+    method: "DELETE"
+  });
+  const result = await res.json();
+  alert(result.message || "Usuario eliminado.");
+  loadUsers(); // Actualiza la lista
+}
+
+function createChart(data) {
+  const ctx = document.getElementById('topicsChart').getContext('2d');
+  const labels = Object.keys(data);
+  const values = Object.values(data);
+  const colors = labels.map(() => `hsl(${Math.random() * 360}, 70%, 70%)`);
+  if (window.myChart) window.myChart.destroy();
+  window.myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Preguntas por tema',
+        data: values,
+        backgroundColor: colors
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+// Inicializa cargando usuarios y estadísticas
+loadUsers();
+loadStats();
+</script>
+
+</body>
+</html>
